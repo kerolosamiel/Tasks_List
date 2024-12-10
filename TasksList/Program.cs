@@ -1,478 +1,455 @@
 ﻿using TasksList;
 
-Start();
+StartApplication();
 
-void Start()
+// Initialize and start the application
+void StartApplication()
 {
-    // welcome message
-    PrintMessage("Welcome to Tasks List Application");
-    var tasks = new List<TaskItem>();
+    DisplayMessage("Welcome to Tasks List Application");
+    var tasks = new List<TaskItem>(); // Create a list to store tasks
 
     while (true)
     {
-        PrintMessage("Please Choose one of them: ");
-        PrintMessage("""
-                     1- Add new task
-                     2- Show your tasks and progress
-                     3- Edit task name
-                     4- Edit task description
-                     5- Edit Progress
-                     6- Tasks information
-                     7- Remove task from the list
-                     8- Clear all tasks 
+        // Display menu options
+        DisplayMessage("Please choose an option: ");
+        DisplayMessage("""
+                     1- Add a new task
+                     2- View tasks and their progress
+                     3- Update task name
+                     4- Update task description
+                     5- Update task progress
+                     6- View task details
+                     7- Remove a task
+                     8- Clear all tasks
                      """);
         Console.Write("=> ");
-        
-        // if user insert not valid number warn him
-        if (!CheckIsConverted(out int nNumberOfFeature))
+
+        // Validate user input and execute the chosen option
+        if (!TryParseInput(out int nSelectedOption))
         {
-            PrintMessage("Please enter valid number!!");
+            DisplayMessage("Please enter valid number!!");
             Console.Clear();
             continue;
         }
-        
+
         Console.Clear();
-        RunFeatures(tasks, nNumberOfFeature);
+        ExecuteOption(tasks, nSelectedOption);
     }
 }
 
 
 #region Methods
 
-#region Run Features
+#region Option Execution
 
-void RunFeatures(List<TaskItem> list, int index)
+// Handle the chosen menu option
+void ExecuteOption(List<TaskItem> tasks, int option)
 {
-    switch (index)
+    switch (option)
     {
         case 1:
-            AddNewTask(list);
+            AddTask(tasks);
             break;
         case 2:
-            ShowTasksFeature(list);
+            DisplayTasks(tasks);
             break;
         case 3:
-            EditTaskName(list);
+            UpdateTaskName(tasks);
             break;
         case 4:
-            EditDescription(list);
+            UpdateTaskDescription(tasks);
             break;
         case 5:
-            EditProgress(list);
+            UpdateTaskProgress(tasks);
             break;
         case 6:
-            TasksInformation(list);
+            ViewTaskDetails(tasks);
             break;
         case 7:
-            ClearTask(list);
+            RemoveTask(tasks);
             break;
         case 8:
-            ClearAll(list);
+            ClearAllTasks(tasks);
             break;
         default:
-            PrintMessage("Please inter number from (1 : 8)");
+            DisplayMessage("Please inter number from (1 : 8)");
             break;
     }
 }
 
 #endregion
 
-#region Public
-// Print Message for user
-void PrintMessage(string message)
+#region Helper Methods
+// Display a message to the user
+void DisplayMessage(string message)
 {
     Console.WriteLine(message);
 }
 
-// get number from user and check if it's valid or not (return bool)
-bool CheckIsConverted (out int number)
+// Parse user input to an integer
+bool TryParseInput(out int number)
 {
-    bool bIsConvert = int.TryParse(Console.ReadLine(), out number);
+    bool bIsValid = int.TryParse(Console.ReadLine(), out number);
     Console.Clear();
-    return bIsConvert;
+    return bIsValid;
 }
 
-// handle if user accept or not 
-bool HandleAccepted()
+// Confirm action from the user
+bool ConfirmAction()
 {
-    string sAnswer = Console.ReadLine() ?? "No";
+    string sResponse = Console.ReadLine()?.Trim().ToLower() ?? "no";
 
-    switch (sAnswer)
+    Console.Clear();
+    switch (sResponse)
     {
-        case "Yes": case "Y": case "YES": case "yes": case "y":
-            Console.Clear();
+        case "yes":
+        case "y":
             return true;
         default:
-            Console.Clear();
             return false;
     }
 }
 
-// Method to clear console
-void ClearConsole()
+// Pause and clear the console
+void PauseAndClear()
 {
-    PrintMessage("Press any key :)"); // ask him to press any key to get back
+    DisplayMessage("Press any key to continue..."); // ask him to press any key to get back
     Console.ReadKey();
     Console.Clear();
 }
 
-// Success Message 
-void Success(List<TaskItem> list)
+// Display success message and list tasks 
+void ShowSuccessMessage(List<TaskItem> tasks)
 {
-    PrintMessage("Success :)");
-    ShowTasks(list); // show all tasks
+    DisplayMessage("Action completed successfully :)");
+    ShowTasks(tasks); // Display the updated task list
 }
 
-void AskIndex(List<TaskItem> list)
+// Prompt user for task index
+void PromptForTaskIndex(List<TaskItem> tasks)
 {
-    PrintMessage("Please enter task number: ");
-    ShowTasks(list);
+    DisplayMessage("Enter the task number: ");
+    ShowTasks(tasks);// Show the list of tasks
     Console.Write("=> ");
 }
 
-bool RunAgain(string happened)
+// Ask user if they want to perform another action
+bool RepeatAction(string actionDescription)
 {
-    PrintMessage($"Do you want to {happened} another task? (Y/N)");
+    DisplayMessage($"Do you want to {actionDescription} another task? (Y/N)");
     Console.Write("=> ");
 
-    return HandleAccepted();
+    return ConfirmAction(); // Return user's decision
 }
 #endregion
 
-#region Add Task Methods
-// method for Add task into the list
-void AddNewTask(List<TaskItem> list)
+#region Task Management Methods
+// Add a new task to the list
+void AddTask(List<TaskItem> tasks)
 {
-    bool bIsValid = true;
-    
-    while (bIsValid)
+    bool bKeepAdding = true;
+
+    while (bKeepAdding)
     {
-        string sTaskName, sTaskDescription;
+        string sTaskName = GetTaskInput("task name");
 
-        // ask user to enter task name 
-        sTaskName = HandleTask("task name");
-        PrintMessage("Do you want to add Description? (Y/N)"); // Ask him if user want to add description or not 
+        DisplayMessage("Would you like to add Description? (Y/N)");
         Console.Write("=> ");
-    
-        // if user add desc initialize the variable by this input if no this default val
-        sTaskDescription = HandleAccepted() ? HandleTask("task description :)") : "No Description Found";
-    
-        // after that add the information to the class and insert it to list 
-        list.Add(new TaskItem()
-        {
-            Id = list.Count + 1,
-            Name = sTaskName,
-            Description = sTaskDescription,
-            Completed = false
-        });
-    
-        // tell user that is success
-        Console.Clear();
-        Success(list);
-    
-        ClearConsole();
 
-        bIsValid = RunAgain("add");
+        // Optionally get a description
+        string sTaskDescription = ConfirmAction() ? GetTaskInput("task description :)") : "No description provided";
+
+        // Create and add the new task
+        tasks.Add(new TaskItem()
+        {
+            TaskId = tasks.Count + 1,
+            TaskName = sTaskName,
+            TaskDescription = sTaskDescription,
+            IsCompleted = false
+        });
+
+        Console.Clear();
+        ShowSuccessMessage(tasks); // Notify user of success
+        PauseAndClear();
+
+        bKeepAdding = RepeatAction("add"); // Ask if user wants to add another task
     }
 }
 
-// Handle the task name and description
-string HandleTask(string complete)
+// Get input from the user
+string GetTaskInput(string inputType)
 {
-    PrintMessage($"Please enter {complete}: ");
+    DisplayMessage($"Enter the {inputType}: ");
     Console.Write("=> ");
-    string sTaskNd = Console.ReadLine() ?? "Not Valid";
+    string sInput = Console.ReadLine() ?? "Not Valid";
     Console.Clear();
-    return sTaskNd;
+    return sInput;
 }
 
-#endregion
-
-#region Show Tasks
-
-void ShowTasksFeature(List<TaskItem> list)
+// Display all tasks in the list
+void DisplayTasks(List<TaskItem> tasks)
 {
-    if (!CheckIsContain(list))
+    if (tasks.Count <= 0)
     {
-        PrintMessage("=> No tasks founded in the list :(");
-        ClearConsole();
+        DisplayMessage("=> No tasks found :(");
+        PauseAndClear();
         return;
     }
 
-    ShowTasks(list);
-    ClearConsole();
+    ShowTasks(tasks);
+    PauseAndClear();
 }
 
-bool CheckIsContain(List<TaskItem> list)
-{
-    return list.Count > 0;
-}
-
-// Show tasks to user 
+// Show each task with its completion status
 void ShowTasks(List<TaskItem> list)
 {
-    PrintMessage("Your Tasks: ");
-    for(int i =0; i < list.Count; i++)
-        PrintMessage($"{i + 1}- {list[i].Name}: {(list[i].Completed ? "Is Completed" : "In Progress")}");
-}
-
-#endregion
-
-#region Edit Task Name
-
-void EditTaskName(List<TaskItem> list)
-{
-    if (!CheckIsContain(list))
-    {
-        PrintMessage("=> No tasks founded in the list :(");
-        ClearConsole();
-        return;
-    }
-    
-    bool bIsValid = true;
-
-    while (bIsValid)
-    {
-        AskIndex(list);
-
-        if (!CheckIsConverted(out int nIndex))
-        {
-            PrintMessage("Please enter valid number!!");
-            ClearConsole();
-            return;
-        }
-
-        try
-        {
-            list[nIndex - 1].Name = HandleTask("new task name");
-            Console.Clear();
-
-            Success(list);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            PrintMessage($"Please enter number between (1 : {list.Count})");
-        }
-        finally
-        {
-            ClearConsole();
-        }
-
-        bIsValid = RunAgain("edit");
-    }
-}
-
-#endregion
-
-#region Edit Task Description
-
-void EditDescription(List<TaskItem> list)
-{
-    if (!CheckIsContain(list))
-    {
-        PrintMessage("=> No tasks founded in the list :(");
-        ClearConsole();
-        return;
-    }
-
-    bool bIsValid = true;
-    while (bIsValid)
-    {
-        AskIndex(list);
-
-        if (!CheckIsConverted(out int nIndex))
-        {
-            PrintMessage("Please enter valid number!!");
-            ClearConsole();
-            return;
-        }
-
-        try
-        {
-            list[nIndex - 1].Description = HandleTask("new description");
-
-            PrintMessage("Success :)");
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            PrintMessage($"Please enter number between (1 : {list.Count})");
-        }
-        finally
-        {
-            ClearConsole();
-        }
-
-        bIsValid = RunAgain("edit");
-    }
-}
-
-#endregion
-
-#region Edit Task Progress
-
-void EditProgress(List<TaskItem> list)
-{
-    if (!CheckIsContain(list))
-    {
-        PrintMessage("=> No tasks founded in the list :(");
-        ClearConsole();
-        return;
-    }
-
-    bool bIsValid = true;
-    while (bIsValid)
-    {
-        AskIndex(list);
-
-        if (!CheckIsConverted(out int nIndex))
-        {
-            PrintMessage("Please enter valid number!!");
-            ClearConsole();
-            return;
-        }
-
-        try
-        {
-            PrintMessage("The task is completed? (Y/N)");
-            list[nIndex - 1].Completed = HandleAccepted();
-
-            Console.Clear();
-            Success(list);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            PrintMessage($"Please enter number between (1 : {list.Count}");
-        }
-        finally
-        {
-            ClearConsole();
-        }
-
-        bIsValid = RunAgain("edit");
-    }
-}
-
-#endregion
-
-#region Task Information
-
-void TasksInformation(List<TaskItem> list)
-{
-    if (!CheckIsContain(list))
-    {
-        PrintMessage("=> No tasks founded in the list :(");
-        ClearConsole();
-        return;
-    }
-
-    bool bIsValid = true;
-    while (bIsValid)
-    {
-        AskIndex(list);
-
-        if (!CheckIsConverted(out int nIndex))
-        {
-            PrintMessage("Please enter valid number!!");
-            return;
-        }
-    
-        try
-        {
-            ShowTaskInfo(list, nIndex - 1);
-            PrintMessage("Done...");
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            PrintMessage($"Please enter number between (1 : {list.Count}");
-        }
-        finally
-        {
-            ClearConsole();
-        }
-
-        bIsValid = RunAgain("show information about ");
-    }
-}
-
-void ShowTaskInfo(List<TaskItem> list, int index)
-{
-    PrintMessage("Task Information: ");
-    PrintMessage($"=> Task ID: {list[index].Id}");
-    PrintMessage($"=> Task Name: {list[index].Name}");
-    PrintMessage($"=> Task Progress: {(list[index].Completed ? "Completed" : "In Progress")}");
-    PrintMessage($"=> Task Description: {list[index].Description}");
-}
-
-#endregion
-
-#region Clear Task
-
-void ClearTask(List<TaskItem> list)
-{
-    if (!CheckIsContain(list))
-    {
-        PrintMessage("=> No tasks founded in the list :(");
-        ClearConsole();
-        return;
-    }
-
-    bool bIsValid = true;
-    while (bIsValid)
-    {
-        AskIndex(list);
-    
-        if (!CheckIsConverted(out int nIndex))
-        {
-            PrintMessage("Please enter valid number!!");
-            return;
-        }
-
-        try
-        {
-            list.RemoveAt(nIndex - 1);
-        
-            SetId(list);
-            Success(list);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            PrintMessage($"Please enter number between (1 :{list.Count})");
-        }
-        finally
-        {
-            ClearConsole();
-        }
-
-        bIsValid = RunAgain("remove");
-    }
-}
-
-void SetId(List<TaskItem> list)
-{
+    DisplayMessage("Your Tasks: ");
     for (int i = 0; i < list.Count; i++)
-        list[i].Id = i + 1;
+        DisplayMessage($"{i + 1}- {list[i].TaskName}: {(list[i].IsCompleted ? "Is Completed" : "In Progress")}");
 }
 
-#endregion
-
-#region CLear All Tasks
-
-void ClearAll(List<TaskItem> list)
+// Update the name of a specific task
+void UpdateTaskName(List<TaskItem> tasks)
 {
-    PrintMessage("Are your sure? (Y/N)");
+    if (tasks.Count <= 0)
+    {
+        DisplayMessage("=> No tasks found :(");
+        PauseAndClear();
+        return;
+    }
+
+    bool bKeepUpdating = true;
+
+    while (bKeepUpdating)
+    {
+        PromptForTaskIndex(tasks); // Prompt user for task index
+
+        if (!TryParseInput(out int nIndex))
+        {
+            DisplayMessage("Invalid number!");
+            PauseAndClear();
+            continue;
+        }
+
+        try
+        {
+            tasks[nIndex - 1].TaskName = GetTaskInput("new task name"); // Update the task name
+            Console.Clear();
+
+            ShowSuccessMessage(tasks);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            DisplayMessage($"Enter number between (1 : {tasks.Count})");
+        }
+        finally
+        {
+            PauseAndClear();
+        }
+
+        bKeepUpdating = RepeatAction("update"); // Ask if user wants to update another task
+    }
+}
+
+// Update the description of a specific task
+void UpdateTaskDescription(List<TaskItem> tasks)
+{
+    if (tasks.Count <= 0)
+    {
+        DisplayMessage("=> No tasks found :(");
+        PauseAndClear();
+        return;
+    }
+
+    bool bKeepUpdating = true;
+    while (bKeepUpdating)
+    {
+        PromptForTaskIndex(tasks);
+
+        if (!TryParseInput(out int nIndex))
+        {
+            DisplayMessage("Invalid number!");
+            PauseAndClear();
+            continue;
+        }
+
+        try
+        {
+            tasks[nIndex - 1].TaskDescription = GetTaskInput("new task description"); // Update the description
+
+            DisplayMessage("Action completed successfully :)");
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            DisplayMessage($"Please enter number between (1 : {tasks.Count})");
+        }
+        finally
+        {
+            PauseAndClear();
+        }
+
+        bKeepUpdating = RepeatAction("update");
+    }
+}
+
+// Update the progress status of a task
+void UpdateTaskProgress(List<TaskItem> tasks)
+{
+    if (tasks.Count <= 0)
+    {
+        DisplayMessage("=> No tasks found :(");
+        PauseAndClear();
+        return;
+    }
+
+    bool bKeepUpdating = true;
+    while (bKeepUpdating)
+    {
+        PromptForTaskIndex(tasks);
+
+        if (!TryParseInput(out int nIndex))
+        {
+            DisplayMessage("Invalid number!");
+            PauseAndClear();
+            continue;
+        }
+
+        try
+        {
+            DisplayMessage("Is the task completed? (Y/N)");
+            tasks[nIndex - 1].IsCompleted = ConfirmAction(); // Update the completion status
+
+            Console.Clear();
+            ShowSuccessMessage(tasks);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            DisplayMessage($"Please enter number between (1 : {tasks.Count}");
+        }
+        finally
+        {
+            PauseAndClear();
+        }
+
+        bKeepUpdating = RepeatAction("update");
+    }
+}
+
+// View detailed information about a specific task
+void ViewTaskDetails(List<TaskItem> tasks)
+{
+    if (tasks.Count <= 0)
+    {
+        DisplayMessage("=> No tasks found :(");
+        PauseAndClear();
+        return;
+    }
+
+    bool bKeepViewing = true;
+    while (bKeepViewing)
+    {
+        PromptForTaskIndex(tasks);
+
+        if (!TryParseInput(out int nIndex))
+        {
+            DisplayMessage("Invalid number!!");
+            continue;
+        }
+
+        try
+        {
+            ShowTaskInfo(tasks, nIndex - 1);
+            DisplayMessage("Done...");
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            DisplayMessage($"Please enter number between (1 : {tasks.Count}");
+        }
+        finally
+        {
+            PauseAndClear();
+        }
+
+        bKeepViewing = RepeatAction("view details of"); // Ask if user wants to view another task
+    }
+}
+
+// Display task details
+void ShowTaskInfo(List<TaskItem> tasks, int index)
+{
+    DisplayMessage("Task Details: ");
+    DisplayMessage($"=> Task ID: {tasks[index].TaskId}");
+    DisplayMessage($"=> Task Name: {tasks[index].TaskName}");
+    DisplayMessage($"=> Task Progress: {(tasks[index].IsCompleted ? "Completed" : "In Progress")}");
+    DisplayMessage($"=> Task Description: {tasks[index].TaskDescription}");
+}
+
+// Remove a task from the list
+void RemoveTask(List<TaskItem> tasks)
+{
+    if (tasks.Count <= 0)
+    {
+        DisplayMessage("=> No tasks found :(");
+        PauseAndClear();
+        return;
+    }
+
+    bool bKeepRemoving = true;
+    while (bKeepRemoving)
+    {
+        PromptForTaskIndex(tasks);
+
+        if (!TryParseInput(out int nIndex))
+        {
+            DisplayMessage("Invalid number!");
+            return;
+        }
+
+        try
+        {
+            tasks.RemoveAt(nIndex - 1); // Remove the task
+
+            ReassignTaskIds(tasks); // Reassign task IDs to maintain sequence
+            ShowSuccessMessage(tasks);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            DisplayMessage($"Please enter number between (1 :{tasks.Count})");
+        }
+        finally
+        {
+            PauseAndClear();
+        }
+
+        bKeepRemoving = RepeatAction("remove");
+    }
+}
+
+// Reassign task IDs to keep them sequential
+void ReassignTaskIds(List<TaskItem> tasks)
+{
+    for (int i = 0; i < tasks.Count; i++)
+        tasks[i].TaskId = i + 1;
+}
+
+// Clear all tasks from the list
+void ClearAllTasks(List<TaskItem> tasks)
+{
+    DisplayMessage("Are you sure you want to clear all tasks? (Y/N)");
     Console.Write("=> ");
 
-    if (!HandleAccepted())
+    if (!ConfirmAction())
     {
-        PrintMessage("Okay :)");
-        ClearConsole();
+        DisplayMessage("Operation cancelled.");
+        PauseAndClear();
         return;
     }
-    list.Clear();
-    
-    PrintMessage("Success :)");
-    ClearConsole();
+    tasks.Clear(); // Clear the task list
+
+    DisplayMessage("All tasks cleared successfully.");
+    PauseAndClear();
 }
 
 #endregion
+
 #endregion

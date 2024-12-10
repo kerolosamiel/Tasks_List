@@ -1,9 +1,13 @@
 namespace TasksList;
 
+/// <summary>
+/// Represents a task in the task management application.
+/// </summary>
+
 public class TaskItem
 {
-    public required int Id { get; set; }
-    public required string Name { get; set; }
-    public required bool Completed { get; set; }
-    public string? Description { get; set; }
+    public required int TaskId { get; set; }
+    public required string TaskName { get; set; }
+    public required bool IsCompleted { get; set; }
+    public string? TaskDescription { get; set; }
 }
